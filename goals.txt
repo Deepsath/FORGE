@@ -1,0 +1,6 @@
+gym
+bike
+car
+bus
+learn c programming
+bike
