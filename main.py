@@ -11,6 +11,7 @@ import json
 goals = []
 completed_goals = []
 DATABASE_FILE = "forge.json"
+LINES = ("==============================")
 
 
 # ---------------- CLEAR SCREEN ----------------
@@ -70,6 +71,26 @@ def save_data():
     with open(DATABASE_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
+
+#------------------search goal-----------------
+def search_goal():
+    search=input("Enter the goal:").strip()
+    result=[]
+
+    for goal in goals:
+        if search.lower() in goal.lower():
+            result.append(goal)
+
+    if not result:
+         print("❌ No goals found.")
+
+    else:
+        print(f"\nFound {len(result)} goal(s):\n")
+
+        for index,goal in enumerate(result,start=1):
+            print(f"{index}.{goal}")
+
+    input("\nPress ENTER to continue...")
 
 
 
@@ -154,9 +175,24 @@ def rename_goal(index):
 
     new_goal = input("\nEnter new goal name ➜ ")
 
+    while True:
+            goal_name = input("\nEnter your goal ➜ ").strip()
+    
+            if goal_name == "":
+                print("❌ Please enter a valid goal.")
+    
+            elif goal_name.lower() in [goal["name"].lower() for goal in goals]:
+                print("⚠️ Goal already exists.")
+    
+            else:
+                goals.append(goal_name)
+    
+                save_data()
+                break
+
     goals[index] = new_goal
 
-    save_data()
+    
 
     print(f'\n✅ Goal renamed to "{new_goal}"')
 
@@ -193,7 +229,57 @@ def delete_goal(index):
 
     input("\nPress ENTER to continue...")
 
+#---------------completed goal option------------
+def completed_goal_options(index):
 
+    while True:
+
+        clear_screen()
+
+        print("══════════════════════════════")
+        print("       ⚙ GOAL OPTIONS")
+        print("══════════════════════════════")
+
+        print(f"\n🏷 Selected Goal : {goals[index]}")
+
+        print("1. 🔄 Restore Goal")
+        print("2. 🗑 Delete Goal")
+        print("3. 🔙 Back")
+
+        choice = input("\nChoose an option ➜ ")
+
+        if choice == "1":
+            restore_goal(index)
+            break
+
+        elif choice == "2":
+            delete_goal(index)
+            break
+        elif choice == "4":
+                    break
+        
+        else:
+            print("\n❌ Invalid choice.")
+            input("\nPress ENTER to continue...")
+
+
+#----------------Restore goal-------------------
+def restore_goal(index):
+
+    clear_screen()
+
+    item = completed_goals.pop(index)
+    goals.append(item)
+
+    save_data()
+
+    print(" ══════════════════════════════" )
+    print("        🔄 GOAL RESTORED       ")
+    print(" ══════════════════════════════")
+
+    print(f'📌 "{item}" moved back to Active Goals.')
+
+    input("\nPress ENTER to continue...")
 # ---------------- CREATE GOAL ----------------
 # Creates a new goal and saves it.
 def create_goal():
@@ -233,7 +319,10 @@ def active_goals():
 
     clear_screen()
 
-    print("════════ ACTIVE GOALS ════════\n")
+    print(LINES)
+    print("        🎯 ACTIVE GOALS       ")
+    print(
+        LINES)
 
     if len(goals) == 0:
 
@@ -249,11 +338,19 @@ def active_goals():
     for index, goal in enumerate(goals, start=1):
         print(f"{index}. {goal}")
 
-    print("\n──────────────────────────────")
+    print(LINES)
 
-    choice = input("Select a goal\nor B to go back ➜ ")
+    print(LINES)
+    print("S → Search Goal")
+    print("B → Back")
 
-    if choice.lower() == "b":
+    choice = input("\nSelect a goal ➜ ")
+
+    if choice.lower()=="s":
+        search_goal()
+        return
+
+    elif choice.lower() == "b":
         return
 
     try:
@@ -298,7 +395,9 @@ def view_completed_goals():
 
     clear_screen()
 
-    print("══════ COMPLETED GOALS ══════\n")
+    print(LINES)
+    print("       COMPLETED GOALS         ")
+    print(LINES)
 
     if len(completed_goals) == 0:
 
@@ -311,7 +410,22 @@ def view_completed_goals():
         for index, goal in enumerate(completed_goals, start=1):
             print(f"🏆 {index}. {goal}")
 
-    input("\nPress ENTER to return...")
+    choice = input("\nSelect a goal or B to go back ➜ ")
+
+    if choice.lower() == "b":
+        return
+
+    try:
+        index = int(choice) - 1
+
+        if 0 <= index < len(completed_goals):
+            completed_goal_options(index)
+
+        else:
+            print("❌ Invalid goal number.")
+
+    except ValueError:
+        print("❌ Please enter a valid number.")
 
 
 # ---------------- DASHBOARD ----------------
@@ -322,9 +436,11 @@ def view_progress():
 
     total = len(goals) + len(completed_goals)
 
-    print("════════ DASHBOARD ════════\n")
+    print(LINES)
+    print("          DASHBOARD          ")
+    print(LINES)
 
-    print(f"🎯 Total Goals     : {total}")
+    print(f"\n🎯 Total Goals     : {total}")
     print(f"📌 Active Goals    : {len(goals)}")
     print(f"🏆 Completed Goals : {len(completed_goals)}")
 
