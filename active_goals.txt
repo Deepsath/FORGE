@@ -1,7 +1,0 @@
-bike
-car
-sun
-
-
-sdf
-bike

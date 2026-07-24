@@ -1,12 +1,16 @@
 import os
+import json
+
+
+
 
 # ---------------- FILE NAMES ----------------
-ACTIVE_FILE = "active_goals.txt"
-COMPLETED_FILE = "completed_goals.txt"
+
 
 # ---------------- GLOBAL LISTS ----------------
 goals = []
 completed_goals = []
+DATABASE_FILE = "forge.json"
 
 
 # ---------------- CLEAR SCREEN ----------------
@@ -38,62 +42,36 @@ def welcome():
 
 
 # ---------------- LOAD DATA ----------------
-# Loads saved goals from text files into memory.
+# Loads saved goals from the JSON database
 def load_data():
 
-    # Load Active Goals
+    global goals
+    global completed_goals
+
     try:
 
-        file = open(ACTIVE_FILE, "r")
+        with open(DATABASE_FILE, "r") as file:
+            data = json.load(file)
 
-        lines = file.readlines()
+        goals = data["active_goals"]
+        completed_goals = data["completed_goals"]
 
-        for line in lines:
-            goals.append(line.strip())
+    except (FileNotFoundError, json.JSONDecodeError):
+        goals = []
+        completed_goals = []
 
-        file.close()
+# ---------------- SAVE DATA----------------
+def save_data():
+    data = {
+        "active_goals": goals,
+        "completed_goals": completed_goals
+        }
 
-    except FileNotFoundError:
-        pass
-
-    # Load Completed Goals
-    try:
-
-        file = open(COMPLETED_FILE, "r")
-
-        lines = file.readlines()
-
-        for line in lines:
-            completed_goals.append(line.strip())
-
-        file.close()
-
-    except FileNotFoundError:
-        pass
+    with open(DATABASE_FILE, "w") as file:
+        json.dump(data, file, indent=4)
 
 
-# ---------------- SAVE ACTIVE GOALS ----------------
-# Saves all active goals to active_goals.txt.
-def save_active_goals():
 
-    file = open(ACTIVE_FILE, "w")
-
-    for goal in goals:
-        file.write(goal + "\n")
-
-    file.close()
-
-
-# ---------------- SAVE COMPLETED GOALS ----------------
-# Saves all completed goals to completed_goals.txt.
-def save_completed_goals():
-
-    file = open(COMPLETED_FILE, "w")
-
-    for goal in completed_goals:
-        file.write(goal + "\n")
-
-    file.close()
 
 # ---------------- GOAL OPTIONS ----------------
 # Displays all available actions for a selected goal.
@@ -144,8 +122,7 @@ def complete_goal(index):
 
     completed_goals.append(item)
 
-    save_active_goals()
-    save_completed_goals()
+    save_data()
 
     clear_screen()
 
@@ -179,7 +156,7 @@ def rename_goal(index):
 
     goals[index] = new_goal
 
-    save_active_goals()
+    save_data()
 
     print(f'\n✅ Goal renamed to "{new_goal}"')
 
@@ -206,7 +183,7 @@ def delete_goal(index):
 
         goals.pop(index)
 
-        save_active_goals()
+        save_data()
 
         print(f'\n🗑 "{item}" deleted successfully.')
 
@@ -239,9 +216,10 @@ def create_goal():
         else:
             goals.append(goal_name)
 
-            save_active_goals()
+            save_data()
             break
     
+
 
     print(f'\n✅ Goal "{goal_name}" created successfully!')
 
